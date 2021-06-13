@@ -1,11 +1,10 @@
 const mongoose = require('mongoose');
-const config = require('./config');
 //var connDB = "mongodb+srv://anant1:Admin@cluster553.oap06.gcp.mongodb.net/test"
 
 let connection = null;
 
 module.exports.connect = () => new Promise((resolve, reject) => {
-    mongoose.connect(config.development.db.url ,{dbName: config.development.db.dbName,useNewUrlParser : true, socketTimeoutMS : 1800000 })
+    mongoose.connect(process.env.DB_URL ,{dbName: process.env.DB_NAME,useNewUrlParser : true, socketTimeoutMS : 1800000 })
     .then((db) => {
         resolve(db)
         connection = db;

@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
 const db = require('./db-config');
-const config = require('./config');
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const path = require('path');
+require('dotenv').config();
 app.use(express.urlencoded({extended : false}))
 app.use(express.json())
 app.use(fileUpload())
@@ -18,7 +18,7 @@ db
 .connect()
 .then(() => console.log("Database connected"))
 .then(() => {
-  app.listen(config.development.port)
+  app.listen(process.env.PORT)
 })
 .catch(err => console.log(err))
 

@@ -23,7 +23,7 @@ function App() {
       // fetchFileList()
       
     
-    const events = new EventSource('http://localhost:3000/poll-status');
+    const events = new EventSource(process.env.API_URL/'poll-status');
 
       events.onmessage = (event) => {
         const parsedData = JSON.parse(event.data);
@@ -35,7 +35,7 @@ function App() {
   },[])
 
   function fetchFileList(){
-    return axios.get('http://localhost:3000/files',{params: {id : ""}})
+    return axios.get(process.env.API_URL/'files',{params: {id : ""}})
   }
   // On file select (from the pop up)
   function onFileChange (event) {
@@ -81,7 +81,7 @@ function App() {
   
     // Request made to the backend api
     // Send formData object
-    axios.post("http://localhost:3000/save", formData)
+    axios.post(process.env.API_URL/"save", formData)
     .then(data => {
       console.log("save" , data)
       if(data.data.success){
@@ -91,7 +91,7 @@ function App() {
     setSelectedFile("")
   };
   function getFileContent(id){
-    axios.get(`http://localhost:3000/file-content/${id}`)
+    axios.get(process.env.API_URL/`file-content/${id}`)
     .then(data => {
       console.log("file content --- " , data)
       if(data.data.success){
