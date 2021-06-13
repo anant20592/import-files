@@ -5,16 +5,19 @@ const config = require('./config');
 let connection = null;
 
 module.exports.connect = () => new Promise((resolve, reject) => {
-    mongoose.connect(config.development.db.url ,{dbName: config.development.db.dbName, useUnifiedTopology: true,useNewUrlParser : true })
+    mongoose.connect(config.development.db.url ,{dbName: config.development.db.dbName,useNewUrlParser : true, socketTimeoutMS : 1800000 })
     .then((db) => {
         resolve(db)
         connection = db;
     }).catch(err => {
         console.log(err)
-        // Always hard exit on a database connection error
+        //hard exit on a database connection error
         reject(err)
         process.exit(1);
     })
+    mongoose.connection.on('disconnected', err => {
+        console.log("DB disconnected - " , err);
+      });
 });
 
 module.exports.get = () => {
