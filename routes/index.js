@@ -35,7 +35,7 @@ route.get('/poll-status', (req,res) => {
         // "Access-Control-Allow-Headers":
         //   "Origin, X-Requested-With, Content-Type, Accept",
       })
-      setInterval(() => {
+     let eventInterval =  setInterval(() => {
         checkStatus()
         .then(data => {
             res.write(`data: ${JSON.stringify({success : 'true',data : data})}\n\n`)
@@ -43,10 +43,10 @@ route.get('/poll-status', (req,res) => {
         
       }, 5000)
 
-    //   req.on('close', (err) => {
-    //     clearInterval();
-    //     res.end();
-    //     })
+      req.on('close', (err) => {
+        clearInterval(eventInterval);
+        res.end();
+        })
 })
 
 

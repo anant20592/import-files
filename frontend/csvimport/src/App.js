@@ -117,7 +117,11 @@ function App() {
         <Form.File 
           id="custom-file"
           onChange={(e) => onFileChange(e)}
-          label={selectedFile.name ?  selectedFile.name : "Upload file(upto 5MB size)"}
+          onClick={(e)=> { 
+            e.target.value = null
+          }}
+          label={selectedFile ? selectedFile.name  :  "Upload file(upto 5MB size)"}
+          //label={selectedFile.name ?  selectedFile.name : "Upload file(upto 5MB size)"}
           custom
         />
         </Form.Group>
