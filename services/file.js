@@ -8,28 +8,41 @@ exports.importFile = (fileToImport) => {
 
         var file_id;
         var rows = [];
-
+        var count = 5000;
+        var counter = 0;
         const stream = parse({ headers: true })
             .on('error', error => console.error(error))
             .on('data', row => {
-                console.log(`Valid [row=${JSON.stringify(row)}]`)
-                rows.push(row);
+                if(counter < count){
+                    console.log(`Valid [row=${JSON.stringify(row)}]`)
+                    rows.push(row);
+                    ++counter;
+                }else{
+                    stream.pause();
+                }
             })
-            .on('data-invalid', (row, rowNumber) => console.log(`Invalid [rowNumber=${rowNumber}] [row=${JSON.stringify(row)}]`))
-            .on('end', rowCount => {
-                console.log(`Parsed ${rowCount} rows`)
+            .on('pause' , () =>{
+                console.log("========Stream paused with data ===== " , rows);
                 fileData.create({ _id: new mongoose.Types.ObjectId(), file_id: file_id, data: rows }, async function (err, documents) {
                     if (err) throw err;
-                    try {
-                        const doc = await fileDetail.findOne({ "_id": file_id });
-                        doc.status = 'complete'
-                        doc.save().then(data => {
-                            console.log("======= File import completed successfully ======== ")
-                        })
-                    } catch (err) {
-                        console.log(err)
-                    }
+                    rows = [];
+                    counter = 0;
+                    stream.resume()
                 });
+                
+            })
+            .on('data-invalid', (row, rowNumber) => console.log(`Invalid [rowNumber=${rowNumber}] [row=${JSON.stringify(row)}]`))
+            .on('end', async rowCount => {
+                console.log(`Parsed ${rowCount} rows`)
+                try{
+                    const doc = await fileDetail.findOne({ "_id": file_id });
+                    doc.status = 'complete'
+                    doc.save().then(data => {
+                        console.log("======= File import completed successfully ======== ")
+                    })
+                }catch(err){
+                    console.log("==== Error completing the job ======== " ,err)
+                }
             });
         fileDetail.create({
             _id: new mongoose.Types.ObjectId(),
