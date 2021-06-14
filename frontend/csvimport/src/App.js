@@ -23,7 +23,7 @@ function App() {
       // fetchFileList()
       
     
-    const events = new EventSource(process.env.API_URL/'poll-status');
+    const events = new EventSource('https://csv-import-140621.herokuapp.com/poll-status');
 
       events.onmessage = (event) => {
         const parsedData = JSON.parse(event.data);
@@ -35,7 +35,7 @@ function App() {
   },[])
 
   function fetchFileList(field = 'date_uploaded' , value= 1){
-    return axios.get(process.env.API_URL/`files?field=${field}&val=${value}`)
+    return axios.get(`https://csv-import-140621.herokuapp.com/files?field=${field}&val=${value}`)
   }
 
   function sortList(field , order){
@@ -89,7 +89,7 @@ function App() {
   
     // Request made to the backend api
     // Send formData object
-    axios.post(process.env.API_URL/'save', formData)
+    axios.post('https://csv-import-140621.herokuapp.com/save', formData)
     .then(data => {
       console.log("save" , data)
       if(data.data.success){
@@ -99,7 +99,7 @@ function App() {
     setSelectedFile("")
   };
   function getFileContent(id){
-    axios.get(process.env.API_URL/`file-content/${id}`)
+    axios.get(`https://csv-import-140621.herokuapp.com/file-content/${id}`)
     .then(data => {
       console.log("file content --- " , data)
       if(data.data.success){
