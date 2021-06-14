@@ -36,6 +36,7 @@ route.get('/poll-status', (req,res) => {
         //   "Origin, X-Requested-With, Content-Type, Accept",
       })
      let eventInterval =  setInterval(() => {
+         console.log("----Polling status -------")
         checkStatus()
         .then(data => {
             res.write(`data: ${JSON.stringify({success : 'true',data : data})}\n\n`)
