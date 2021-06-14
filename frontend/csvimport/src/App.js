@@ -23,7 +23,7 @@ function App() {
       // fetchFileList()
 
 
-      const events = new EventSource(`${process.env.API_URL}poll-status`);
+      const events = new EventSource(process.env.API_URL/'poll-status');
 
       events.onmessage = (event) => {
         const parsedData = JSON.parse(event.data);
@@ -35,7 +35,8 @@ function App() {
   }, [])
 
   function fetchFileList(field = 'date_uploaded', value = 1) {
-    return axios.get(`${process.env.API_URL}files?field=${field}&val=${value}`)
+    let url = `files?field=${field}&val=${value}`;
+    return axios.get(process.env.API_URL/url)
   }
 
   function sortList(field, order) {
