@@ -9,133 +9,146 @@ import TableComponent from './Table';
 function App() {
 
   const [selectedFile, setSelectedFile] = useState("");
-  const [fileList , setFileList] = useState([])
-  const [listening, setListening]= useState(false);
-  const [errorMsg , setErrorMsg] = useState("");
-  const [status,setStatus] = useState({});
-   useEffect(() => {
-     fetchFileList()
-     .then(data => {
-        console.log("===== File List ======  " , data.data)
+  const [fileList, setFileList] = useState([])
+  const [listening, setListening] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [status, setStatus] = useState({});
+  useEffect(() => {
+    fetchFileList()
+      .then(data => {
+        console.log("===== File List ======  ", data.data)
         setFileList(data.data)
       })
-     if(!listening){
+    if (!listening) {
       // fetchFileList()
-      
-    
-    const events = new EventSource(process.env.API_URL/'poll-status');
+
+
+      const events = new EventSource(process.env.API_URL / 'poll-status');
 
       events.onmessage = (event) => {
         const parsedData = JSON.parse(event.data);
-      console.log("parseddd== " ,parsedData.data)
+        console.log("parseddd== ", parsedData.data)
         setStatus(parsedData.data)
       };
     }
-      setListening(true)
-  },[])
+    setListening(true)
+  }, [])
 
-  function fetchFileList(){
-    return axios.get(process.env.API_URL/'files',{params: {id : ""}})
+  function fetchFileList(field = 'date_uploaded', value = 1) {
+    return axios.get(process.env.API_URL / `files?field=${field}&val=${value}`)
+  }
+
+  function sortList(field, order) {
+    let value = order == 'asc' ? 1 : -1;
+    fetchFileList(field, value)
+      .then(data => {
+        setFileList(data.data)
+      })
   }
   // On file select (from the pop up)
-  function onFileChange (event) {
+  function onFileChange(event) {
     setErrorMsg('')
     console.log(event.target.files[0])
     // Update the state
     setSelectedFile(event.target.files[0])
 
   };
-  
+
   // On file upload (click the upload button)
   function onFileUpload(e) {
     e.preventDefault();
-    if(!selectedFile){
+    if (!selectedFile) {
       setErrorMsg('Please select a file')
       return
     }
     let fileFormat = selectedFile.name.split('.').pop();
-    if(fileFormat.toLowerCase() !== 'csv'){
+    if (fileFormat.toLowerCase() !== 'csv') {
       setErrorMsg('Invalid file format')
       setSelectedFile("")
       return
     }
 
-    if(selectedFile.size > 5000000){
+    if (selectedFile.size > 5000000) {
       setErrorMsg('File size too big')
       setSelectedFile("")
       return
     }
-    
+
     // Create an object of formData
     const formData = new FormData();
-  
+
     // Update the formData object
     formData.append(
       "myFile",
       selectedFile,
       selectedFile.name
     );
-  
+
     // Details of the uploaded file
     console.log(selectedFile);
-  
+
     // Request made to the backend api
     // Send formData object
-    axios.post(process.env.API_URL/"save", formData)
-    .then(data => {
-      console.log("save" , data)
-      if(data.data.success){
-        setFileList([...fileList, data.data.data])
-      }
-    })
+    axios.post(process.env.API_URL / 'save', formData)
+      .then(data => {
+        console.log("save", data)
+        if (data.data.success) {
+          setFileList([...fileList, data.data.data])
+        }
+      })
     setSelectedFile("")
   };
-  function getFileContent(id){
-    axios.get(process.env.API_URL/`file-content/${id}`)
-    .then(data => {
-      console.log("file content --- " , data)
-      if(data.data.success){
-        let newArray = fileList.map(file => {
-          if(file._id === id){
-            file.file_content = data.data.data;
-          }
-          return file;
-        })
-        setFileList(newArray)
-      }
-    })
+  function getFileContent(id) {
+    axios.get(process.env.API_URL / `file-content/${id}`)
+      .then(data => {
+        console.log("file content --- ", data)
+        if (data.data.success) {
+          let newArray = fileList.map(file => {
+            if (file._id === id) {
+              file.file_content = data.data.data;
+            }
+            return file;
+          })
+          setFileList(newArray)
+        }
+      })
   }
   return (
     <Container>
-      <div style={{marginTop: '3%'}}>
+      <div style={{ marginTop: '3%' }}>
         <h3>Import CSV file</h3>
       </div>
       <div>
-        
-      <Form onSubmit={(e) => onFileUpload(e)}>
-        <Form.Group>
-        <Form.File 
-          id="custom-file"
-          onChange={(e) => onFileChange(e)}
-          onClick={(e)=> { 
-            e.target.value = null
-          }}
-          label={selectedFile ? selectedFile.name  :  "Upload file(upto 5MB size)"}
-          //label={selectedFile.name ?  selectedFile.name : "Upload file(upto 5MB size)"}
-          custom
-        />
-        </Form.Group>
-        <span>{errorMsg}</span>
-        <br/>
-        <Button variant="primary" type="submit">
-          Submit
-        </Button>
-    </Form>
+
+        <Form onSubmit={(e) => onFileUpload(e)}>
+          <Form.Group>
+            <Form.File
+              id="custom-file"
+              onChange={(e) => onFileChange(e)}
+              onClick={(e) => {
+                e.target.value = null
+              }}
+              label={selectedFile ? selectedFile.name : "Upload file(upto 5MB size)"}
+              //label={selectedFile.name ?  selectedFile.name : "Upload file(upto 5MB size)"}
+              custom
+            />
+          </Form.Group>
+          <span>{errorMsg}</span>
+          <br />
+          <Button variant="primary" type="submit">
+            Submit
+          </Button>
+        </Form>
       </div>
-      <br/>
-      <TableComponent fileList={fileList} getFileContent={(id) => getFileContent(id)} status={status}/>
-          </Container>
-      
+      <br />
+      <TableComponent
+        fileList={fileList}
+        getFileContent={(id) => getFileContent(id)}
+        status={status}
+        sort={(field, order) => sortList(field, order)}
+      />
+    </Container>
+
   );
 }
 
