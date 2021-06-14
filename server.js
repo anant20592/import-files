@@ -14,11 +14,12 @@ app.get('/', (req, res) => {
 });
 app.use(cors())
 app.use(require('./routes'));
+const PORT = process.env.PORT || 3000
 db
 .connect()
 .then(() => console.log("Database connected"))
 .then(() => {
-  app.listen(process.env.PORT)
+  app.listen(PORT, () => console.log(`App is running on port ${PORT}`))
 })
 .catch(err => console.log(err))
 
